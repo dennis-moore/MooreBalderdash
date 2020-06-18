@@ -1,49 +1,27 @@
 ﻿import React, { Component } from 'react';
-import { IconButton } from '@material-ui/core';
+import { IconButton, Typography } from '@material-ui/core';
 import MUIDataTable from "mui-datatables";
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
-
-const options = {
-    filterType: 'checkbox',
-    selectableRows: 'none',
-    filter: false,
-    search: false,
-    sort: false,
-    print: false,
-    download: false,
-    viewColumns: false,
-    pagination: false,
-    customFooter: (count, page, rowsPerPage, changeRowsPerPage, changePage, textLabels) => {
-        return (
-            <div>
-                
-            </div>
-            <CustomFooter
-                count={count}
-                page={page}
-                rowsPerPage={rowsPerPage}
-                changeRowsPerPage={changeRowsPerPage}
-                changePage={changePage}
-                textLabels={textLabels} />
-        );
-    }
-};
+import StarsIcon from '@material-ui/icons/Stars';
+import { CustomButton } from './Home';
 
 export class PlayerList extends Component {
 
-    componentDidUpdate(prevProps, prevState) {
-        Object.entries(this.props).forEach(([key, val]) =>
-            prevProps[key] !== val && console.log(`Prop '${key}' changed`)
-        );
-        if (this.state) {
-            Object.entries(this.state).forEach(([key, val]) =>
-                prevState[key] !== val && console.log(`State '${key}' changed`)
-            );
-        }
-    }
+    //componentDidUpdate(prevProps, prevState) {
+    //    object.entries(this.props).foreach(([key, val]) =>
+    //        prevprops[key] !== val && console.log(`prop '${key}' changed`)
+    //    );
+    //    if (this.state) {
+    //        object.entries(this.state).foreach(([key, val]) =>
+    //            prevstate[key] !== val && console.log(`state '${key}' changed`)
+    //        );
+    //    }
+    //}
 
     render() {
+        const updateScore = this.props.updateScore;
+        const isDasher = this.props.isDasher;
         const columns = [
             {
                 name: "name",
@@ -51,6 +29,14 @@ export class PlayerList extends Component {
                 options: {
                     filter: false,
                     sort: false,
+                    customBodyRender: (value, tableMeta, updateValue) => {
+                        return (
+                            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start' }}>
+                                {isDasher && < StarsIcon style={{ paddingRight: 10 }} />}
+                                <Typography variant="body1"> {value} </Typography>
+                            </div>
+                        );
+                    }
                 }
             },
             {
@@ -86,6 +72,32 @@ export class PlayerList extends Component {
                     }
                 }
             }]
+
+        const options = {
+            filterType: 'checkbox',
+            selectableRows: 'none',
+            filter: false,
+            search: false,
+            sort: false,
+            print: false,
+            download: false,
+            viewColumns: false,
+            pagination: false,
+            customFooter: (count, page, rowsPerPage, changeRowsPerPage, changePage, textLabels) => {
+                return (
+                    <div>
+                        {isDasher &&
+                            <CustomButton color="primary"
+                                onClick={() => {
+                                    updateScore();
+                                }}>
+                                Submit
+                            </CustomButton>
+                        }
+                    </div>
+                );
+            }
+        };
 
         return (
             <MUIDataTable

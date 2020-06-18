@@ -7,7 +7,7 @@ export class Player extends Component {
 
     render() {
         const name = this.props.name
-        cont score = this.props.score
+        const score = this.props.score
         const updateScore = this.props.score
 
         return (

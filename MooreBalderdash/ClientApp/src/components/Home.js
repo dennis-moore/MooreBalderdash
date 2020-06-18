@@ -85,8 +85,6 @@ export class Home extends Component {
                         </div>                        
                         :
                         <div align='center'>
-                            <p> Welcome, {this.state.playerName} </p>
-                            <p> Current Dasher: {this.state.dasherName} </p>
                             <CustomButton color="primary" disabled={disableBtn}
                                 onClick={() => {
                                     this.GetCard()
@@ -127,7 +125,7 @@ export class Home extends Component {
         return (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 {this.state.gameStarted &&
-                    <PlayerList players={this.state.players} updateScore={this.updateScore} />
+                    <PlayerList players={this.state.players} updateScore={this.updateScore} isDasher={this.state.dasher} />
                 }
                 {contents}
                 {this.state.gameStarted &&
@@ -243,6 +241,7 @@ export class Home extends Component {
     }
 
     async UpdateScore() {
+        if (!this.state.dasher) return;
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
