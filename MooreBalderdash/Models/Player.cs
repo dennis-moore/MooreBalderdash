@@ -11,5 +11,6 @@ namespace MooreBalderdash.Models
         public string name { get; set; }
         public string ip { get; set; }
         public bool dasher { get; set; }
+        public int score { get; set; }
     }
 }

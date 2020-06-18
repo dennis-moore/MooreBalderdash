@@ -15,6 +15,10 @@ namespace MooreBalderdash.Controllers
     {
         private readonly GameContext _gameContext;
 
+        //private string ApiServerPath = "http://98.200.148.70:1950";
+        private string ApiServerPath = "http://localhost:5000";
+        //private string ApiServerPath = "http://98.198.169.251:1950";
+
         public GamesController(GameContext context)
         {
             _gameContext = context;
@@ -154,8 +158,8 @@ namespace MooreBalderdash.Controllers
             {
                 Startup.CurrentCard = new Card()
                 {
-                    answer = @"http://98.200.148.70:1950/images/1_answer.jpg",
-                    question = @"http://98.200.148.70:1950/images/1_question.jpg",
+                    answer = String.Format(@"{0}/images/1_answer.jpg", ApiServerPath),
+                    question = String.Format(@"{0}/images/1_question.jpg", ApiServerPath),
                 };
             }
             return Startup.CurrentCard;
@@ -167,8 +171,8 @@ namespace MooreBalderdash.Controllers
             if (Startup.ImageIndex == 6) Startup.ImageIndex = 1;
             Card card = new Card()
             {
-                answer = String.Format(@"http://98.200.148.70:1950/images/{0}_answer.jpg", Startup.ImageIndex),
-                question = String.Format(@"http://98.200.148.70:1950/images/{0}_question.jpg", Startup.ImageIndex)
+                answer = String.Format(@"{0}/images/{1}_answer.jpg", ApiServerPath, Startup.ImageIndex),
+                question = String.Format(@"{0}/images/{1}_question.jpg", ApiServerPath, Startup.ImageIndex)
             };            
             Startup.CurrentCard = card;
         }
@@ -196,6 +200,25 @@ namespace MooreBalderdash.Controllers
             await _gameContext.SaveChangesAsync();
             SetNextCard();
             return dasher;
+        }
+
+        [HttpGet("[action]")]
+        public async Task<List<Player>> GetPlayers()
+        {
+            List<Player> players = await _gameContext.Players.ToListAsync();
+            return players;
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UpdateScore(List<Player> players)
+        {
+            players.ForEach(async (player) =>
+            {
+                Player _player = await _gameContext.Players.FirstOrDefaultAsync(_player => _player.name == player.name);
+                _player.score = player.score;
+            });
+            await _gameContext.SaveChangesAsync();
+            return Ok();
         }
     }
 }

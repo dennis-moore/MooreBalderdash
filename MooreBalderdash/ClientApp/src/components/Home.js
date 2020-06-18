@@ -3,10 +3,12 @@ import { Button, TextField } from '@material-ui/core';
 import { styled } from '@material-ui/core/styles';
 import ImageGallery from 'react-image-gallery';
 import "react-image-gallery/styles/css/image-gallery.css";
+import { PlayerList } from './PlayerList';
 
-//const ApiServerPath = 'http://localhost:5000/api/';
+const ApiServerPath = 'http://localhost:5000/api/';
 //const ApiServerPath = 'http://10.0.0.224:1950/api/';
-const ApiServerPath = 'http://98.200.148.70:1950/api/';
+//const ApiServerPath = 'http://98.200.148.70:1950/api/';
+//const ApiServerPath = 'http://98.198.169.251:1950/api/';
 
 export const CustomButton = styled(Button)({
     background: '#0063cc',
@@ -33,13 +35,17 @@ export class Home extends Component {
         super(props);
         this.state = {
             loading: true, registered: false, dasher: false, admin: false, gameStarted: false,
-            playerName: "", cardImages: [], dasherName: "",
+            playerName: "", cardImages: [], dasherName: "", players: []
         };
     }
 
     componentDidMount() {
         this.checkGameStarted();
+        this.GetPlayers();
         setInterval(() => {
+            if (!this.state.dasher) {
+                this.GetPlayers();
+            }
             this.CheckDasher();
             this.GetCard();
         }, 3500);
@@ -49,10 +55,20 @@ export class Home extends Component {
         this.setState({ playerName: event.target.value });
     };
 
+    updateScore = (name, score) => {
+        const players = this.state.players.map(player => {
+            if (player.name === name) {
+                player.score = score
+            }
+            return player
+        })
+        this.setState({ players: players })
+    }
+
     renderInterface = () => {
         const disableBtn = this.state.playerName === "";
         return (
-            <div>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: 600 }}>
                 {this.state.gameStarted ?
                 <div>
                     {!this.state.registered ?
@@ -67,8 +83,8 @@ export class Home extends Component {
                                 Submit
                             </CustomButton>
                         </div>                        
-                            :
-                        <div>
+                        :
+                        <div align='center'>
                             <p> Welcome, {this.state.playerName} </p>
                             <p> Current Dasher: {this.state.dasherName} </p>
                             <CustomButton color="primary" disabled={disableBtn}
@@ -84,13 +100,13 @@ export class Home extends Component {
                                     }}>
                                     End Round
                                 </CustomButton>
-                            }
-                            <ImageGallery items={this.state.cardImages} />
+                                }
+                                <ImageGallery items={this.state.cardImages} />
                         </div>
                     }
                 </div>
                 :
-                <div>
+                <div align='center'>
                     <CustomButton color="primary"
                         onClick={() => {
                             this.CreateGame()
@@ -109,9 +125,14 @@ export class Home extends Component {
             : this.renderInterface()
 
         return (
-            <div align="center">
-                <h1>Happy Mother's Day, Momma!</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                {this.state.gameStarted &&
+                    <PlayerList players={this.state.players} updateScore={this.updateScore} />
+                }
                 {contents}
+                {this.state.gameStarted &&
+                    <h2 style={{ width: 300 }}> Chat </h2>
+                }
             </div>
         );
     }
@@ -217,6 +238,31 @@ export class Home extends Component {
         if (response.ok) {
             this.setState({ dasherName: dasher.name, dasher: false });
             this.GetCard()
+        }
+        await this.UpdateScore();
+    }
+
+    async UpdateScore() {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify(this.state.players)
+        };
+        const request = ApiServerPath + 'Games/UpdateScore';
+        const response = await fetch(request, requestOptions);
+        if (!response.ok) {
+            console.log("error updating score")
+        }
+    }
+
+    async GetPlayers() {
+        const response = await fetch(ApiServerPath + 'Games/GetPlayers');
+        const players = await response.json();
+        if (response.ok) {
+            const _players = players.map(player => {
+                return { name: player.name, score: player.score }
+            })
+            this.setState({ players: _players })
         }
     }
 }
